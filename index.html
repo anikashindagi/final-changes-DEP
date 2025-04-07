@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+
+  <!-- Load jQuery, Bootstrap, Firebase -->
+  <!-- jQuery -->
+  <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+  <!-- Add html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Add jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    console.log(typeof addDoc);
+    
+
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAIDs-jSvlJmf7ga5RCvzvo4RmGQ1kzBDs",
+        authDomain: "dataentryportal-17441.firebaseapp.com",
+        projectId: "dataentryportal-17441",
+        storageBucket: "dataentryportal-17441.firebasestorage.app",
+        messagingSenderId: "380052849415",
+        appId: "1:380052849415:web:6563eb7973362dab15fba2",
+        measurementId: "G-6WQHNQMX2D"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    var currentuser = {};
+    const db = getFirestore(app);
+
+    
+
+    // Handle new user creation button click
+     // Toggle between login and create user sections
+     $("#show-create-user").click(function() {
+        $("#login-section").hide();
+        $("#create-user-section").show();
+    });
+
+    $("#show-login").click(function() {
+        $("#create-user-section").hide();
+        $("#login-section").show();
+    });
+
+    // Handle new user creation button click
+    $("#create-newuser-button").click(function() {
+    var email = $("#CreateEmail").val();
+    var password = $("#CreatePassword").val();
+    var designation = $("#Designation").val();
+    var kmcId = $("#KMCId").val();
+    var adminKey = $("#AdminKey").val();
+
+    if (adminKey !== "DEP123") {
+        alert("Invalid Admin Key. User creation not allowed.");
+        return;
+    }
+
+    console.log("Creating new user: " + email);
+    createnewuser(email, password, designation, kmcId);
+});
+
+function createnewuser(email, password, designation, kmcId) {
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log("User created:", user);
+            alert("User created successfully!");
+            WriteUserData(user, designation, kmcId);
+        })
+        .catch((error) => {
+            console.error("Error:", error.code, error.message);
+            alert("Error: " + error.message);
+        });
+}
+
+async function WriteUserData(user, designation, kmcId) {
+    try {
+        console.log("Writing user data to Firestore...");
+        await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            designation: designation,
+            password: password,
+            kmcId: kmcId
+        });
+        console.log("User data successfully written!");
+    } catch (error) {
+        console.error("Error writing user data:", error);
+    }
+}
+
+    // Handle existing user sign-in button click
+    $("#sign-in-button").click(function() {
+        var email = $("#LoginEmail").val();
+        var password = $("#LoginPassword").val();
+        console.log("Signing in user: " + email);
+        signInUser(email, password);
+    });
+
+    function signInUser(email, password) {
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                console.log("User signed in:", user);
+                alert("Login successful! Welcome " + user.email);
+                window.location.href = "general.html";
+            })
+            .catch((error) => {
+                console.error("Login Error:", error.code, error.message);
+                alert("Login Failed: " + error.message);
+            });
+    }
+
+    $("#logout-button").click(function() {
+        auth.signOut();
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log("User signed in:", user.email);
+            WriteUserData(user);
+        } else {
+            console.log("User signed out");
+        }
+    });
+
+    </script>
+
+<style>
+    body {
+        background-image: url('img14.png'); /* Replace with your image path */
+        background-size: cover;  /* Ensures the image covers the entire background */
+        background-position: center;  /* Centers the image */
+        height: 100vh;  /* Makes sure the body takes up the full viewport height */
+        margin: 0;
+        position:relative;
+    }
+    /* Overlay to make the image translucent */
+
+#login-section {
+  background-color: rgba(255, 255, 255, 0.7); /* White background with 30% transparency */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional: soft shadow for better visibility */
+    color: black; /* Text color for contrast */
+    margin-top: 30px;
+}
+#create-user-section {
+  background-color: rgba(255, 255, 255, 0.7); /* White background with 30% transparency */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional: soft shadow for better visibility */
+    color: black; /* Text color for contrast */
+    margin-top: 30px;
+}
+    .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.944); /* Adjust transparency */
+        }
+
+        .content {
+            position: relative;
+            z-index: 1; /* Makes sure content is above the overlay */
+            text-align: center;
+            padding: 5px;
+        }
+
+        h1, p {
+            color: black; /* Text color to contrast the background */
+        }
+
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.9); /* Light background for form */
+            padding: 5px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 50px;
+        }
+        
+      /* Flexbox for image and heading alignment */
+.d-flex {
+    display: flex;
+    align-items: center;  /* Ensures vertical centering */
+}
+
+.about-image {
+    width: 150px; /* Set the width of the image */
+    height: auto; /* Keep the image's aspect ratio */
+    border-radius: 5px; /* Optional: rounded corners for the image */
+}
+
+/* Add margin-left to the heading to give space between image and text */
+.ms-3 {
+    margin-left: 15px;
+}
+
+    
+</style>
+    
+</head>
+
+<body>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-center align-items-center">
+      <!-- Image on the left side of the heading -->
+      <img src="manipallogo.png" alt="Department Logo" class="about-image" />
+      
+      <!-- Heading text -->
+      <h1 class="ms-3">Department of Hand Surgery, KMC</h1>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Hand Surgery Dept.</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="login-link">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Section (initially hidden) -->
+  <div class="container mt-4">
+    <div class="row">
+      <div class="row justify-content-center">
+        <!-- Login Section -->
+        <div class="col-md-6">
+            <div class="card p-4" id="login-section">
+                <h2>Login</h2>
+                <form>
+                    <div class="mb-3">
+                        <label for="LoginEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="LoginEmail" placeholder="Enter email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="LoginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="LoginPassword" placeholder="Password">
+                    </div>
+                    <button type="button" class="btn btn-primary" id="sign-in-button">Sign in</button>
+                    <p class="mt-3">New user? <a href="#" id="show-create-user">Create an account</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Create User Section (Initially Hidden) -->
+        <div class="col-md-6">
+          <div class="card p-4" id="create-user-section" style="display: none;">
+              <h2>Create User</h2>
+              <form>
+                  <div class="mb-3">
+                      <label for="CreateEmail" class="form-label">Email address</label>
+                      <input type="email" class="form-control" id="CreateEmail" placeholder="Enter email">
+                  </div>
+                  <div class="mb-3">
+                      <label for="CreatePassword" class="form-label">Password</label>
+                      <input type="password" class="form-control" id="CreatePassword" placeholder="Password">
+                  </div>
+                  <div class="mb-3">
+                      <label for="Designation" class="form-label">Designation</label>
+                      <input type="text" class="form-control" id="Designation" placeholder="Enter Designation">
+                  </div>
+                  <div class="mb-3">
+                      <label for="KMCId" class="form-label">KMC ID Number</label>
+                      <input type="text" class="form-control" id="KMCId" placeholder="Enter KMC ID">
+                  </div>
+                  <div class="mb-3">
+                      <label for="AdminKey" class="form-label">Admin Key</label>
+                      <input type="password" class="form-control" id="AdminKey" placeholder="Enter Admin Key">
+                  </div>
+                  <button type="button" class="btn btn-secondary" id="create-newuser-button">Create New User</button>
+                  <p class="mt-3">Log-in? <a href="#" id="show-login">Back to Login &lt;--</a></p>
+              </form>
+          </div>
+      </div>
+    </div>
+</div></div>
+
+
+<script>
+  // Toggle between About and Login sections
+  document.getElementById("about-link").onclick = function () {
+      document.getElementById("about").style.display = "block";
+      document.getElementById("login-section").style.display = "none";
+  };
+
+  document.getElementById("login-link").onclick = function () {
+      document.getElementById("about").style.display = "none";
+      document.getElementById("login-section").style.display = "block";
+  };
+</script>
+</body>
+</html>
