@@ -98,7 +98,7 @@ async function WriteUserData(user, designation, kmcId) {
         await setDoc(doc(db, "users", user.uid), {
             email: user.email,
             designation: designation,
-            password: password,
+            
             kmcId: kmcId
         });
         console.log("User data successfully written!");
