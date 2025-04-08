@@ -1867,15 +1867,15 @@ th {
         <label class="form-label fw-bold">Affected Side *</label>
         <div class="d-flex pe-4">
             <div class="form-check me-3">
-                <input class="form-check-input" type="radio" name="Affected Side" id="left2" value="left" onclick="updateDeformitySection()" required>
+                <input class="form-check-input" type="radio" name="Affected Side" id="left2" value="left"  required>
                 <label class="form-check-label" for="left">Left</label>
             </div>
             <div class="form-check me-3">
-                <input class="form-check-input" type="radio" name="Affected Side" id="right2" value="right" onclick="updateDeformitySection()">
+                <input class="form-check-input" type="radio" name="Affected Side" id="right2" value="right" >
                 <label class="form-check-label" for="right">Right</label>
             </div>
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="Affected Side" id="both1" value="both" onclick="updateDeformitySection()">
+                <input class="form-check-input" type="radio" name="Affected Side" id="both1" value="both" >
                 <label class="form-check-label" for="both">Both</label>
             </div>
         </div>
@@ -2179,108 +2179,292 @@ th {
             </script></div>
             <hr style="border-top: 2px dotted black; width: 100%;">
 
-             <div class="container mt-3">
-                 <label class="form-label fw-bold">Deformities:</label>
-                 <div id="deformityContainer"></div></div>
-               <script>
-                // Deformities options (with "None" first and "Other" last)
-    const deformityOptions = [
-        { id: "none", label: "None" },
-        { id: "mallet", label: "Mallet" },
-        { id: "flail-limb", label: "Flail limb" },
-        { id: "finger-drop", label: "Finger drop" },
-        { id: "thumb-drop", label: "Thumb drop" },
-        { id: "wrist-drop", label: "Wrist drop" },
-        { id: "claw-hand", label: "Claw hand" },
-        { id: "pointing-index", label: "Pointing index" },
-        { id: "ape-thumb", label: "Ape-thumb" },
-        { id: "boutonniere", label: "Boutonniere" },
-        { id: "swan-neck", label: "Swan-neck" },
-        { id: "loss-of-finger-cascade", label: "Loss of finger cascade" },
-        { id: "other", label: "Other" }
-    ];
-
-    function generateDeformityCheckboxes(hand) {
-        let checkboxes = deformityOptions.map(opt => `
-            <div class="form-check me-3">
-                <input class="form-check-input deformity-check ${hand}-deformity" type="checkbox" id="${hand}-${opt.id}" onchange="handleDeformitySelection('${hand}')">
-                <label class="form-check-label" for="${hand}-${opt.id}">${opt.label}</label>
-            </div>
-        `).join("");
-
-        return `
-            <div class="mb-3">
-                <label class="form-label fw-bold">${hand.charAt(0).toUpperCase() + hand.slice(1)} Hand Deformities:</label>
-                <div class="d-flex flex-wrap">${checkboxes}</div>
-                <input type="text" class="form-control mt-2" id="${hand}-other-text" placeholder="Specify other deformity" style="display: none;">
-            </div>
-        `;
-    }
-
-    function updateDeformitySection() {
-        let selectedSide = document.querySelector('input[name="side"]:checked').value;
-        let deformityContainer = document.getElementById("deformityContainer");
-
-        if (selectedSide === "both") {
-            deformityContainer.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">${generateDeformityCheckboxes("left")}</div>
-                    <div class="col-md-6">${generateDeformityCheckboxes("right")}</div>
+            <div class="container mt-3 text-center">
+                <!-- Side selection -->
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Deformity Section:</label>
+                  <div class="d-flex justify-content-center">
+                    <div class="form-check me-3">
+                      <input class="form-check-input" type="radio" name="deformity" id="leftSide" value="left" onchange="toggleSideTables()">
+                      <label class="form-check-label" for="leftSide">Left</label>
+                    </div>
+                    <div class="form-check me-3">
+                      <input class="form-check-input" type="radio" name="deformity" id="rightSide" value="right" onchange="toggleSideTables()">
+                      <label class="form-check-label" for="rightSide">Right</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="deformity" id="bothSides" value="both" onchange="toggleSideTables()">
+                      <label class="form-check-label" for="bothSides">Both</label>
+                    </div>
+                  </div>
                 </div>
-            `;
-        } else {
-            deformityContainer.innerHTML = generateDeformityCheckboxes(selectedSide);
-        }
-    }
-
-    function handleDeformitySelection(hand) {
-        let noneCheckbox = document.getElementById(`${hand}-none`);
-        let otherCheckbox = document.getElementById(`${hand}-other`);
-        let otherTextbox = document.getElementById(`${hand}-other-text`);
-        let checkboxes = document.querySelectorAll(`.${hand}-deformity`);
-
-        if (noneCheckbox.checked) {
-            // Disable only the checkboxes of the same hand
-            checkboxes.forEach(checkbox => {
-                if (checkbox.id !== `${hand}-none`) {
-                    checkbox.checked = false;
-                    checkbox.disabled = true;
+              </div>
+              
+            
+                <!-- Tables Container -->
+                <div class="row" id="tablesContainer">
+                  <!-- Left Hand Deformities Table - Initially Hidden -->
+                  <div id="leftHandTable" class="col-12 col-md-6 mb-4" style="display: none;">
+                    <h5>Left Hand Deformities</h5>
+                    <table class="table table-bordered">
+                      <tbody>
+                        <tr>
+                          <td>None</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-none" onchange="handleNoneSelection('left')">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Mallet</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-mallet">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Flail limb</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-flail-limb">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Finger drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-finger-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Thumb drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-thumb-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Wrist drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-wrist-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Claw hand</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-claw-hand">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Pointing index</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-pointing-index">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Ape-thumb</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-ape-thumb">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Boutonniere</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-boutonniere">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Swan-neck</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-swan-neck">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Loss of finger cascade</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-loss-of-finger-cascade">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Other</td>
+                          <td class="text-center">
+                            <input class="form-check-input left-deformity" type="checkbox" id="left-other" onchange="toggleOtherTextbox('left')">
+                          </td>
+                        </tr>
+                        <tr id="left-other-row" style="display: none;">
+                          <td colspan="2">
+                            <input type="text" class="form-control" id="left-other-text" placeholder="Specify other deformity">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+            
+                  <!-- Right Hand Deformities Table - Initially Hidden -->
+                  <div id="rightHandTable" class="col-12 col-md-6 mb-4" style="display: none;">
+                    <h5>Right Hand Deformities</h5>
+                    <table class="table table-bordered">
+                      <tbody>
+                        <tr>
+                          <td>None</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-none" onchange="handleNoneSelection('right')">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Mallet</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-mallet">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Flail limb</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-flail-limb">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Finger drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-finger-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Thumb drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-thumb-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Wrist drop</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-wrist-drop">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Claw hand</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-claw-hand">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Pointing index</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-pointing-index">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Ape-thumb</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-ape-thumb">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Boutonniere</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-boutonniere">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Swan-neck</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-swan-neck">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Loss of finger cascade</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-loss-of-finger-cascade">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Other</td>
+                          <td class="text-center">
+                            <input class="form-check-input right-deformity" type="checkbox" id="right-other" onchange="toggleOtherTextbox('right')">
+                          </td>
+                        </tr>
+                        <tr id="right-other-row" style="display: none;">
+                          <td colspan="2">
+                            <input type="text" class="form-control" id="right-other-text" placeholder="Specify other deformity">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            
+              <script>
+                function toggleSideTables() {
+                  const selectedSide = document.querySelector('input[name="deformity"]:checked').value;
+                  const leftTable = document.getElementById("leftHandTable");
+                  const rightTable = document.getElementById("rightHandTable");
+                  
+                  if (selectedSide === "left") {
+                    leftTable.style.display = "block";
+                    leftTable.className = "col-12 mb-4";
+                    rightTable.style.display = "none";
+                  } else if (selectedSide === "right") {
+                    leftTable.style.display = "none";
+                    rightTable.style.display = "block";
+                    rightTable.className = "col-12 mb-4";
+                  } else if (selectedSide === "both") {
+                    leftTable.style.display = "block";
+                    leftTable.className = "col-12 col-md-6 mb-4";
+                    rightTable.style.display = "block";
+                    rightTable.className = "col-12 col-md-6 mb-4";
+                  }
                 }
-            });
-            otherTextbox.style.display = "none";
-            otherTextbox.value = "";
-        } else {
-            // Enable checkboxes only for this hand
-            checkboxes.forEach(checkbox => checkbox.disabled = false);
-
-            // Show the text box only when "Other" is checked
-            if (otherCheckbox.checked) {
-                otherTextbox.style.display = "inline-block";
-            } else {
-                otherTextbox.style.display = "none";
-                otherTextbox.value = "";
-            }
-        }
-    }
-            </script>
+            
+                function handleNoneSelection(side) {
+                  const noneCheckbox = document.getElementById(`${side}-none`);
+                  const checkboxes = document.querySelectorAll(`.${side}-deformity`);
+                  
+                  if (noneCheckbox.checked) {
+                    // Disable all other checkboxes for this side
+                    checkboxes.forEach(checkbox => {
+                      if (checkbox.id !== `${side}-none`) {
+                        checkbox.checked = false;
+                        checkbox.disabled = true;
+                      }
+                    });
+                    
+                    // Hide "Other" text box if visible
+                    document.getElementById(`${side}-other-row`).style.display = "none";
+                  } else {
+                    // Enable all checkboxes for this side
+                    checkboxes.forEach(checkbox => {
+                      checkbox.disabled = false;
+                    });
+                  }
+                }
+            
+                function toggleOtherTextbox(side) {
+                  const otherCheckbox = document.getElementById(`${side}-other`);
+                  const otherRow = document.getElementById(`${side}-other-row`);
+                  
+                  if (otherCheckbox.checked) {
+                    otherRow.style.display = "table-row";
+                  } else {
+                    otherRow.style.display = "none";
+                    document.getElementById(`${side}-other-text`).value = "";
+                  }
+                }
+              </script>
             <hr style="border-top: 2px dotted black; width: 100%;">
 
             <div class="container mt-3">
                 <!-- Finger Amputation Selection -->
-                <div class="d-flex align-items-center">
-                    <div class="text-center">
-                        <label class="form-label fw-bold mt-3">Finger tip injury/amputation: *</label>
-                      </div>
-                      
-                    <div class="form-check me-3">
+                <div class="container text-center mt-3">
+                    <label class="form-label fw-bold">Finger tip injury/amputation: *</label>
+                    
+                    <div class="d-flex justify-content-center align-items-center mt-2">
+                      <div class="form-check me-3">
                         <input class="form-check-input" type="radio" name="finger_amputation" id="amputation_present" value="present" onclick="updateAmputationSection()" required>
-                        <label class="form-check-label" name="finger_amputation" for="amputation_present">Present</label>
-                    </div>
-                    <div class="form-check">
+                        <label class="form-check-label" for="amputation_present">Present</label>
+                      </div>
+                      <div class="form-check">
                         <input class="form-check-input" type="radio" name="finger_amputation" id="amputation_absent" value="absent" onclick="updateAmputationSection()">
-                        <label class="form-check-label" name="finger_amputation" for="amputation_absent">Absent</label>
+                        <label class="form-check-label" for="amputation_absent">Absent</label>
+                      </div>
                     </div>
-                </div>
+                  </div>
+                  
                 <hr style="border-top: 2px dotted black; width: 100%;">
                 
             <!-- Amputation Table -->
@@ -2481,7 +2665,7 @@ th {
                 
 function updateAmputationSection() {
     const status = document.querySelector('input[name="finger_amputation"]:checked')?.value;
-    const side = document.querySelector('input[name="side"]:checked')?.value;
+    const side = document.querySelector('input[name="Affected Side"]:checked')?.value;
 
     const table = document.getElementById("amputationTable");
     const leftCols = document.querySelectorAll(".left-col");
@@ -3877,70 +4061,102 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
              <hr style="border-top: 2px dotted black; width: 100%;">
-             <div class="question">
-                <label>Is E/O Compartment Syndrome present? *</label>
-                <div class="radio-group">
-                    <input type="radio" id="yes76" name=" e/o compartment syndrome_present" value="yes" onchange="toggleSymptoms()" required>
-                    <label for="yes76" style="display: inline;">Yes</label>
-                    
-                    <input type="radio" id="no76" name="e/o compartment syndrome_present" value="no" onchange="toggleSymptoms()" style="margin-left: 20px;">
-                    <label for="no76" style="display: inline;">No</label>
-                </div>
-                
-                <div id="symptoms" class="symptoms" style="display: none;">
-                    <label>Select the symptom that is present:</label>
-                    
-                    <div class="symptoms-row">
-                        <div class="symptom-item">
-                            <input type="radio" id="pain1" name="symptoms" value="pain">
-                            <label for="pain1" style="display: inline;">Pain out-of-proportion</label>
-                        </div>
-                        
-                        <div class="symptom-item">
-                            <input type="radio" id="stretch1" name="symptoms" value="stretch">
-                            <label for="stretch1" style="display: inline;">Stretch pain</label>
-                        </div>
-                        
-                        <div class="symptom-item">
-                            <input type="radio" id="induration1" name="symptoms" value="induration">
-                            <label for="induration1" style="display: inline;">Induration (woody feel)</label>
-                        </div>
-                        
-                        <div class="symptom-item">
-                            <input type="radio" id="paraesthesia1" name="symptoms" value="paraesthesia">
-                            <label for="paraesthesia1" style="display: inline;">Paraesthesia</label>
-                        </div>
-                        
-                        <div class="symptom-item">
-                            <input type="radio" id="paralysis1" name="symptoms" value="paralysis">
-                            <label for="paralysis1" style="display: inline;">Paralysis</label>
-                        </div>
-                        
-                        <div class="symptom-item">
-                            <input type="radio" id="pulselessness1" name="symptoms" value="pulselessness">
-                            <label for="pulselessness1" style="display: inline;">Pulselessness</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <script>
-                function toggleSymptoms() {
-                    const symptomsDiv = document.getElementById('symptoms');
-                    const isYesSelected = document.getElementById('yes76').checked;
-                    
-                    if (isYesSelected) {
-                        symptomsDiv.style.display = 'block';
-                    } else {
-                        symptomsDiv.style.display = 'none';
-                        // Clear selected symptom when "No" is selected
-                        const radioButtons = document.querySelectorAll('input[name="symptoms"]');
-                        radioButtons.forEach(radio => {
-                            radio.checked = false;
-                        });
-                    }
-                }            
-            </script>
+             <h6>Select E/O Compartment Syndrome symptoms that are present:</h6>
+    
+             <table>
+                 <tbody>
+                     <tr>
+                         <td>Pain out-of-proportion</td>
+                         <td class="dropdown-cell">
+                             <select id="pain1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>Stretch pain</td>
+                         <td class="dropdown-cell">
+                             <select id="stretch1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>Induration (woody feel)</td>
+                         <td class="dropdown-cell">
+                             <select id="induration1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>Paraesthesia</td>
+                         <td class="dropdown-cell">
+                             <select id="paraesthesia1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>Paralysis</td>
+                         <td class="dropdown-cell">
+                             <select id="paralysis1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td>Pulselessness</td>
+                         <td class="dropdown-cell">
+                             <select id="pulselessness1" name="symptoms" class="symptom-select">
+                                 <option value="no">No</option>
+                                 <option value="yes">Yes</option>
+                             </select>
+                         </td>
+                     </tr>
+                 </tbody>
+             </table>
+         
+             <script>
+                 // Function to handle NIL dropdown
+                 function handleNilDropdown() {
+                     const nilDropdown = document.getElementById('nil1');
+                     const symptomDropdowns = document.querySelectorAll('.symptom-select');
+                     
+                     // When NIL is set to Yes, set all other dropdowns to No and disable them
+                     nilDropdown.addEventListener('change', function() {
+                         if (this.value === 'yes') {
+                             symptomDropdowns.forEach(dropdown => {
+                                 dropdown.value = 'no';
+                                 dropdown.disabled = true;
+                                 dropdown.parentElement.parentElement.style.opacity = "0.5";
+                             });
+                         } else {
+                             symptomDropdowns.forEach(dropdown => {
+                                 dropdown.disabled = false;
+                                 dropdown.parentElement.parentElement.style.opacity = "1";
+                             });
+                         }
+                     });
+                     
+                     // When any symptom is set to Yes, set NIL to No
+                     symptomDropdowns.forEach(dropdown => {
+                         dropdown.addEventListener('change', function() {
+                             if (this.value === 'yes') {
+                                 nilDropdown.value = 'no';
+                             }
+                         });
+                     });
+                 }
+                 
+                 // Initialize the function immediately
+                 handleNilDropdown();
+             </script>
              <hr style="border-top: 2px dotted black; width: 100%;">
 
              <label for="brachial" class="form-label fw-bold">Associated Brachial Plexus Injury? *</label><br>
@@ -5229,7 +5445,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="col-md-6">
               <label for="PAge" name="patient age" class="form-label">Patient Age *</label>
-              <input type="number" name="patient age" class="form-control" id="P1" required>
+              <input type="text" name="patient age" class="form-control" id="P1" required>
             </div>
           </div>
           
@@ -5380,7 +5596,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td><input type="checkbox" id="lkjm"></td>
           <td><input type="checkbox" id="jkhj"></td>
           <td><input type="checkbox" id="kjl"></td>
-          <td><input type="checkbox" id="5668765"></td>
+          <td><input type="checkbox" id="hjkmnj"></td>
         </tr>
       </tbody>
     </table>
@@ -5449,7 +5665,7 @@ document.addEventListener("DOMContentLoaded", () => {
           
           <!-- PROCEDURE Table -->
           <div id="procedureTable" style="display: none;">
-            <h5>Procedure: *</h5>
+            <h5>Procedure:</h5>
             <table class="table table-bordered">
                 <tbody>
                     <tr>
@@ -5505,21 +5721,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr> 
                         <td>Arm</td>
-                        <td><input type="number" id="arm_volar_skin_loss" name="arm_volar_skin_loss" step="0.01" min="0"></td>
+                        <td><input type="text" id="arm_volar_skin_loss" name="arm_volar_skin_loss"></td>
                         <td><input type="text" id="arm_dorsum_skin_loss" name="arm_dorsum_skin_loss"></td>
 
                     </tr>
                     <tr>
                         <td>Forearm</td>
-                        <td><input type="number" id="forearm_volar_skin_loss" name="forearm_volar_skin_loss" step="0.01" min="0"></td>
                         <td><input type="text" id="forearm_volar_skin_loss" name="forearm_volar_skin_loss"></td>
+                        <td><input type="text" id="forearm_dorsum_skin_loss" name="forearm_dorsum_skin_loss"></td>
                     </tr>
                     <tr>
                         <td>Hand</td>
-                        <td><input type="number" id="hand_volar_skin_loss" name="hand_volar_skin_loss" step="0.01" min="0"></td>
                         <td><input type="text" id="hand_volar_skin_loss" name="hand_volar_skin_loss"></td>
+                        <td><input type="text" id="hand_dorsum_skin_loss" name="hand_dorsum_skin_loss"></td>
                     </tr>
                 </tbody>
             </table>            
